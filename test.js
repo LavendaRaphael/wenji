@@ -1,9 +1,10 @@
 "nodejs";
 
-const name = [
-    {a: 1},
-    {b: 2}
-]
-for (var i=0; i<name.length;i++) {
-    console.log(name[i])
-}
+const ui = require('ui');
+
+ui.layout(
+    <vertical>
+        <button text="第一个按钮"/>
+        <button text="第二个按钮"/>
+    </vertical>
+);

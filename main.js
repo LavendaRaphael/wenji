@@ -26,6 +26,7 @@ async function findclick(capturer, template, clickxy=undefined, ganrao=undefined
     {
         capture = await capturer.nextImage();
         result = await findImage(capture, template);
+        console.log('findclick',result);
         if (result) {
             await sleep(1000);
             capture = await capturer.nextImage();
@@ -72,25 +73,31 @@ async function shilianta(capturer, cishu) {
 async function guanqia(capturer, cishu) {
     const tiaozhan1 = await readImage("./img/guanqia/tiaozhan1.jpg");
     const zhanmen = await readImage("./img/guanqia/zhanmen.jpg");
-    const guoguanjiangli = await readImage("./img/guanqia/guoguanjiangli.jpg");
+    const guanqia = await readImage("./img/guanqia/guanqia.jpg");
     const tejialibao = await readImage("./img/guanqia/tejialibao.jpg");
+    const levelup = await readImage("./img/guanqia/levelup.jpg");
     for (var i=0;i<cishu;i++) {
+        console.log('zhanmen',i)
         await findclick(
             capturer,zhanmen,
             clickxy = [541,2127],
             ganrao = [
                 {
-                    img: guoguanjiangli, 
+                    img: guanqia, 
                     xy: [499, 1457],
                 },
                 {
                     img: tejialibao, 
                     xy: [956, 585]
+                },
+                {
+                    img: levelup, 
+                    xy: [499, 1457]
                 }
             ]
-            );
+        );
+        console.log('tiaozhan1',i);
         await findclick(capturer,tiaozhan1);
-        console.log(i);
     }
     tiaozhan1.recycle();
     zhanmen.recycle();
