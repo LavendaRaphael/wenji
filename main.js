@@ -1,8 +1,8 @@
 "nodejs";
 
 //const mode='shilianta';
-//const mode='guanqia';
-const mode='damaoxian';
+const mode='guanqia';
+//const mode='damaoxian';
 const cishu=60;
 
 const { showToast } = require('toast');
@@ -17,39 +17,80 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function findclick(capturer, template, clickxy=undefined) {
+async function findclick(capturer, template, clickxy=undefined, ganrao=undefined) {
     let capture;
     let result;
+    const time_start = new Date();
+    let time_now;
     while (true)
     {
         capture = await capturer.nextImage();
         result = await findImage(capture, template);
-        if (result)
-        {
-            if ( clickxy == undefined ) {
-                clickxy = [result.x, result.y]
-            };
-            await click(clickxy[0], clickxy[1]);
-            await sleep(2000)
-            break;
+        if (result) {
+            await sleep(1000);
+            capture = await capturer.nextImage();
+            result = await findImage(capture, template);
+            if (result) {
+                if ( clickxy == undefined ) {
+                    clickxy = [result.x, result.y];
+                };
+                await click(clickxy[0], clickxy[1]);
+                await sleep(2000);
+                break;
+            }
+        } else if (ganrao != undefined) {
+            for (var j=0; j<ganrao.length; j++) {
+                result = await findImage(capture, ganrao[j].img);
+                if (result) {
+                    await click(ganrao[j].xy[0], ganrao[j].xy[1]);
+                    console.log('ganrao',j)
+                    await sleep(1000)
+                }
+            }
         }
         await sleep(2000);
+        time_now = new Date();
+        if ( time_now-time_start > 120000 ) {
+            await timeout();
+        }
     };
-    
 }
+
+async function timeout() {
+    home();
+    throw 'timeout';
+}
+
 async function shilianta(capturer, cishu) {
     const tiaozhan = await readImage("./img/shilianta/tiaozhan.jpg");    
     for (var i=0;i<cishu;i++) {
         await findclick(capturer,tiaozhan);
+        console.log(i);
     }
     tiaozhan.recycle();
 }
 async function guanqia(capturer, cishu) {
     const tiaozhan1 = await readImage("./img/guanqia/tiaozhan1.jpg");
     const zhanmen = await readImage("./img/guanqia/zhanmen.jpg");
+    const guoguanjiangli = await readImage("./img/guanqia/guoguanjiangli.jpg");
+    const tejialibao = await readImage("./img/guanqia/tejialibao.jpg");
     for (var i=0;i<cishu;i++) {
-        await findclick(capturer,zhanmen,[541,2127]);
+        await findclick(
+            capturer,zhanmen,
+            clickxy = [541,2127],
+            ganrao = [
+                {
+                    img: guoguanjiangli, 
+                    xy: [499, 1457],
+                },
+                {
+                    img: tejialibao, 
+                    xy: [956, 585]
+                }
+            ]
+            );
         await findclick(capturer,tiaozhan1);
+        console.log(i);
     }
     tiaozhan1.recycle();
     zhanmen.recycle();
@@ -60,6 +101,7 @@ async function damaoxian(capturer, cishu) {
     for (var i=0;i<cishu;i++) {
         await findclick(capturer,tiaozhan);
         await findclick(capturer,tiaozhan1);
+        console.log(i);
     }
     tiaozhan.recycle();
     tiaozhan1.recycle();
@@ -70,11 +112,11 @@ async function main() {
     const capturer = await requestScreenCapture();
 
     if (mode == 'shilianta') {
-        await shilianta(capturer,cishu);
+        await shilianta(capturer, cishu);
     } else if (mode == 'guanqia') {
-        await guanqia(capturer,cishu);
+        await guanqia(capturer, cishu);
     } else if (mode == 'damaoxian') {
-        await damaoxian(capturer,cishu);
+        await damaoxian(capturer, cishu);
     }
     capturer.stop();
     home();
