@@ -26,7 +26,6 @@ async function findclick(capturer, template, clickxy=undefined, ganrao=undefined
     {
         capture = await capturer.nextImage();
         result = await findImage(capture, template);
-        console.log('findclick',result);
         if (result) {
             await sleep(1000);
             capture = await capturer.nextImage();
@@ -56,6 +55,43 @@ async function findclick(capturer, template, clickxy=undefined, ganrao=undefined
         }
     };
 }
+async function loopclick(capturer, templates) {
+    let capture;
+    let result;
+    const time_start = new Date();
+    let time_now;
+    let img;
+    let xy;
+    loop_0:
+    while (true)
+    {
+        capture = await capturer.nextImage();
+        for (var j=0; j<templates.length; j++) {
+            img = templates[j].img
+            xy = templates[j].xy
+            result = await findImage(capture, img);
+            if (result) {
+                await sleep(1000);
+                capture = await capturer.nextImage();
+                result = await findImage(capture, img);
+                if (result) {
+                    if (xy == null) {
+                        xy = [result.x, result.y]
+                    };
+                    console.log('find',j);
+                    await click(xy[0], xy[1]);
+                    await sleep(1000);
+                    break loop_0;
+                }
+            }
+        };
+        await sleep(2000);
+        time_now = new Date();
+        if ( time_now-time_start > 120000 ) {
+            await timeout();
+        }
+    };
+}
 
 async function timeout() {
     home();
@@ -72,19 +108,25 @@ async function shilianta(capturer, cishu) {
 }
 async function guanqia(capturer, cishu) {
     const tiaozhan1 = await readImage("./img/guanqia/tiaozhan1.jpg");
-    const zhanmen = await readImage("./img/guanqia/zhanmen.jpg");
+    const shengshu = await readImage("./img/guanqia/shengshu.jpg");
     const guanqia = await readImage("./img/guanqia/guanqia.jpg");
     const tejialibao = await readImage("./img/guanqia/tejialibao.jpg");
     const levelup = await readImage("./img/guanqia/levelup.jpg");
     for (var i=0;i<cishu;i++) {
-        console.log('zhanmen',i)
-        await findclick(
-            capturer,zhanmen,
-            clickxy = [541,2127],
-            ganrao = [
+        console.log('loop',i)
+        await loopclick(
+            capturer,
+            templates = [
+                {
+                    img: shengshu,
+                    xy: [541,2127]
+                },
+                {
+                    img: tiaozhan1,
+                },
                 {
                     img: guanqia, 
-                    xy: [499, 1457],
+                    xy: [499, 1457]
                 },
                 {
                     img: tejialibao, 
@@ -96,11 +138,7 @@ async function guanqia(capturer, cishu) {
                 }
             ]
         );
-        console.log('tiaozhan1',i);
-        await findclick(capturer,tiaozhan1);
     }
-    tiaozhan1.recycle();
-    zhanmen.recycle();
 }
 async function damaoxian(capturer, cishu) {
     const tiaozhan1 = await readImage("./img/guanqia/tiaozhan1.jpg");
@@ -128,5 +166,15 @@ async function main() {
     capturer.stop();
     home();
 }
+async function test() {
+    await sleep(2000)
+    const capturer = await requestScreenCapture();
 
+    const guanqia = await readImage("./img/guanqia/guanqia.jpg");
+    capture = await capturer.nextImage();
+    result = await findImage(capture, guanqia);
+    console.log(result)
+    
+}
+//test();
 main();
